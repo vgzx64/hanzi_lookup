@@ -1,5 +1,4 @@
-cd hanzi_lookup
-cargo build --target wasm32-unknown-unknown --release
-wasm-bindgen .target/wasm32-unknown-unknown/release/hanzi_lookup.wasm --out-dir ./dist --no-modules --no-typescript
-copy .\dist\*.* ..\web_demo
-cd ..
+cargo build -p hanzi_lookup --target wasm32-unknown-unknown --release
+wasm-bindgen target\wasm32-unknown-unknown\release\hanzi_lookup.wasm --out-dir dist --target no-modules
+copy dist\*.* web_demo\
+rmdir /s /q dist

@@ -6,7 +6,7 @@ pub struct MatchCollector<'a> {
 }
 
 impl<'a> MatchCollector<'a> {
-    pub fn new(matches: &mut Vec<Match>, limit: usize) -> MatchCollector {
+    pub fn new(matches: &mut Vec<Match>, limit: usize) -> MatchCollector<'_> {
         assert!(limit > 0, "Expected a positive number for the maximum number of matches.");
         assert!(matches.len() == 0, "The pre-existing matches vector must be empty.");
         MatchCollector {

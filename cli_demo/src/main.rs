@@ -1,6 +1,3 @@
-extern crate serde_derive;
-extern crate hanzi_lookup;
-
 use std::time::{Instant};
 use std::fs::File;
 use std::io::{BufRead, BufReader};

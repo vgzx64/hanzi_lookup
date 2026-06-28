@@ -1,5 +1,3 @@
-extern crate serde_derive;
-
 use super::entities::*;
 use super::*;
 
@@ -20,7 +18,7 @@ pub struct AnalyzedCharacter<'a> {
 }
 
 impl<'a> AnalyzedCharacter<'a> {
-    pub fn from_strokes(strokes: &Vec<Stroke>) -> AnalyzedCharacter {
+    pub fn from_strokes(strokes: &Vec<Stroke>) -> AnalyzedCharacter<'_> {
         let bounding_rect = get_bounding_rect(strokes);
         let analyzed_strokes: Vec<AnalyzedStroke> = build_analyzed_strokes(strokes, &bounding_rect);
         let mut sub_stroke_count: usize = 0;
@@ -257,7 +255,7 @@ fn get_bounding_rect(strokes: &Vec<Stroke>) -> Rect {
 #[cfg(test)]
 #[allow(non_snake_case)]
 mod tests {
-    use serde_derive::{Serialize, Deserialize};
+    use serde::{Serialize, Deserialize};
 
     use super::*;
     use super::super::Point;

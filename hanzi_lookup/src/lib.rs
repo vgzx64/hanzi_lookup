@@ -1,17 +1,13 @@
 #![allow(dead_code)]
 #![allow(unused_imports)]
 
-extern crate wasm_bindgen;
-extern crate serde_derive;
-extern crate bincode;
-
 mod analyzed_character;
 mod cubic_curve_2d;
 mod entities;
 mod match_collector;
 mod matcher;
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
@@ -38,7 +34,7 @@ struct Input {
 #[wasm_bindgen]
 pub fn lookup(input: &JsValue, limit: usize) -> String {
     // Input is vector of vector of vector of numbers - how strokes and their points are represented in JS
-    let input: Vec<Vec<Vec<f32>>> = input.into_serde().unwrap();
+    let input: Vec<Vec<Vec<f32>>> = serde_wasm_bindgen::from_value(input.into()).unwrap();
     // Convert to typed form: vector of strokes
     let mut strokes: Vec<Stroke> = Vec::with_capacity(input.len());
     for i in 0..input.len() {

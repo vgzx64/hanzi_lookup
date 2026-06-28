@@ -1,7 +1,7 @@
 # hanzi_lookup
 
 ![Version](https://img.shields.io/github/tag/gugray/hanzi_lookup.svg)
-[![Build Status](https://travis-ci.com/gugray/hanzi_lookup.svg?branch=master)](https://travis-ci.com/gugray/hanzi_lookup)
+[![CI](https://github.com/vgzx64/hanzi_lookup/actions/workflows/ci.yml/badge.svg)](https://github.com/vgzx64/hanzi_lookup/actions/workflows/ci.yml)
 [![](https://img.shields.io/badge/license-LGPL-blue.svg)](https://opensource.org/licenses/LGPL-3.0)
 
 Free, open-source, browser-based Chinese handwriting recognition in Rust / WebAssembly
@@ -15,7 +15,12 @@ Online demo: <https://gugray.github.io/hanzi_lookup>
 ## Getting started
 If you are only interested in using the library in your own project, all you need is `hanzi_lookup_bg.wasm` and `hanzi_lookup.js`. These two files are the Rust library's output, and they are included in the `web_demo` folder.
 
-- You can use `web_demo` directly if you publish it with a lightweight HTTP server, or even if you just open `index.html` directly from the file system.
+- You can use `web_demo` directly by serving it with a lightweight HTTP server (wasm won't load from `file://`):
+
+      $ cd web_demo
+      $ python3 -m http.server 8080
+
+  Then open `http://localhost:8080` in your browser.
 
 - The demo project loads the WebAssembly module within a tiny Web Worker, contained in `worker.js`. This adds a little extra complexity to the demo because of the event-based communication between the Javascript in `index.html` and the Web Worker. But it's this setup that creates a really smooth user experience by offloading the costly character lookup from the browser's UI thread.
 
@@ -29,35 +34,36 @@ If you are only interested in using the library in your own project, all you nee
 
 ## Building the library
 
-You need Rust nightly to build the library; I have been compiling with `rustc 1.36.0-nightly` specifically. In order to generate the WebAssembly module, you also need to install the WASM target `wasm32-unknown-unknown`, best done by the following command:
+You need Rust stable (1.96+) and the wasm32 target:
 
     $ rustup target add wasm32-unknown-unknown
-    
-With this in place, building the library is a two-step process:
 
-    $ cargo build --target wasm32-unknown-unknown --release
-    $ wasm-bindgen .target/wasm32-unknown-unknown/release/hanzi_lookup.wasm --out-dir ./dist --no-modules --no-typescript
+Building the library is a two-step process:
 
-I included these steps in `build.cmd`, a simple Windows batch file. If you are using Linux/Mac, an equivalent shell script can be derived trivially. The second command, `wasm-bindgen`, is what produces the `hanzi_lookup.js` file that makes the WebAssembly module comfortably accessible from Javascript.
+    $ cargo build -p hanzi_lookup --target wasm32-unknown-unknown --release
+    $ wasm-bindgen target/wasm32-unknown-unknown/release/hanzi_lookup.wasm --out-dir dist --target no-modules
+
+The `wasm-bindgen` CLI must be installed separately:
+
+    $ cargo install wasm-bindgen-cli --version 0.2.126
+
+These steps are automated in `build_wasm.sh` (Linux/Mac) and `build_wasm.cmd` (Windows). The second command, `wasm-bindgen`, is what produces the `hanzi_lookup.js` file that makes the WebAssembly module comfortably accessible from Javascript.
 
 Some more details if you want to delve deeper:
 
-- The command-line demo `demo_cli` also refers to the `hanzi_lookup` library but has regular Debug and Release targets; it doesn't require the WASM target. You can simply run it by switching to its folder and executing `cargo run`.
+- The command-line demo `cli_demo` also refers to the `hanzi_lookup` library but has regular Debug and Release targets; it doesn't require the WASM target. You can simply run it by switching to its folder and executing `cargo run`.
 
-- You can run the library's unit tests via `cargo test` either from the root or from `hanzi_lookup`.
-
-- There is a `launch.json` file in .vscode with two configurations, for debugging the library's tests, and for running the command-line demo. If using VS Code, you will need the [Rust (rls)](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust) plugin.
+- You can run the library's unit tests via `cargo test -p hanzi_lookup` from the workspace root.
 
 - A great intro to Rust, WebAssembly and Web Workers is this post: [Rust, WebAssembly & Web Workers for speed and profit](https://asquera.de/blog/2018-10-01/webassembly-and-wasm-bindgen/).
-  
+
 ## The data file
 
 The library no longer includes the original strokes data from Jordan Kiang's HanziLookup. If you're interested, you can still find it in my related project, [HanziLookupJS](https://github.com/gugray/HanziLookupJS).
- 
+
 The data in in this library is based on `mmah.json`, which is derived from Make Me a Hanzi's `graphics.txt` and encodes 9,507 characters. This file is richer than the Jordan Kiang's original because its substroke data also contains the normalized location (center point) of every substroke. The matching algorithm calculates the score accordingly: a substroke that is in the wrong place counts for less. Each substroke is represented by 3 bytes: (1) Direction in radians, with 0\-2\*PI normalized to 0\-255; (2) Length normalized to 0\-255, where 255 is the bounding square's full width; (3) Centerpoint X and Y, both normalized to 0\-15, with X in the 4 higher bits.
 
 The Rust code loads strokes data from an embedded binary file. You can find the tiny tool I used to convert HanziLookupJS's JSON file into the binary format in the `mmah_json_convert` folder.
-
 
 ## License
 

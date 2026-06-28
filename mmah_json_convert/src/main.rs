@@ -1,8 +1,4 @@
-extern crate serde_derive;
-extern crate base64;
-extern crate bincode;
-
-use serde_derive::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize};
 use serde_json::{Result, Value};
 use std::fs::File;
 
@@ -31,7 +27,8 @@ fn parse_json_strokes(fname: &str) -> Result<Vec<CharData>> {
     // "substrokes" member of json is one u8 blob in base64
     let mut bytes: Vec<u8> = Vec::new();
     if let Value::String(substrokes) = &json["substrokes"] {
-        bytes = base64::decode(&substrokes).unwrap();
+        use base64::Engine;
+        bytes = base64::engine::general_purpose::STANDARD.decode(substrokes).unwrap();
     }
 
     // "chars" member of json lists concise info about characters
